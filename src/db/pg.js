@@ -3,10 +3,12 @@ require('dotenv').config(); // Ensure .env variables are loaded
 const { DATABASE_URL } = process.env;
 
 const pool = new Pool({
-    connectionString: DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false //  В production нужно настроить правильно!
-    }
+    user: 'postgres',
+    host: 'localhost',
+    database: 'postgres',
+    password: 'DoR12052005',
+    port: 5432,
+    ssl: false
 });
 
 pool.connect((err, client, release) => {
