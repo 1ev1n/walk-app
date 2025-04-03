@@ -4,12 +4,13 @@ import axios from 'axios';
 const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
 const api = axios.create({
-    baseURL: baseURL,
+    baseURL: 'http://localhost:3000/api',  // Должно быть правильно настроено
     headers: {
         'Content-Type': 'application/json',
     },
-    withCredentials: true, // Если требуется отправка куки
+    withCredentials: true,
 });
+
 
 // Проверка наличия Telegram WebApp
 const checkTelegramWebApp = () => {
