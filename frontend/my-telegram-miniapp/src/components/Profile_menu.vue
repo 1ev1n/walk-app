@@ -56,6 +56,7 @@
   </div>
 </template>
 
+
 <script>
 import RouteCard from './Route_card.vue';
 import axios from 'axios';
@@ -68,7 +69,7 @@ export default {
   },
   data() {
     return {
-      activeTab: 'my',
+      activeTab: 'my',  // Изначально активная вкладка
       favoriteRoutes: [],
       myRoutes: [],
       feedRoutes: [],
@@ -84,11 +85,12 @@ export default {
     return { goToRouteEdit };
   },
   mounted() {
-    this.fetchRoutes();
+    this.fetchRoutes(); // Загрузка маршрутов при монтировании
   },
   methods: {
     setActiveTab(tab) {
-      this.activeTab = tab;
+      console.log("Переключение на вкладку:", tab); // Отладка
+      this.activeTab = tab; // Устанавливаем активную вкладку
     },
     async fetchRoutes() {
       try {
@@ -106,6 +108,7 @@ export default {
           headers: { 'x-dev-user': 'true' }
         });
         this.feedRoutes = feedResponse.data;
+
       } catch (error) {
         console.error('Ошибка при загрузке данных маршрутов:', error);
       }
@@ -114,19 +117,33 @@ export default {
 };
 </script>
 
+
 <style scoped>
+
 .profile-menu {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 60vh;
+  height: 50vh;
   background-color: #fff;
   padding: 20px;
   box-sizing: border-box;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
+}
+
+.user-details h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.user-details p {
+  margin: 0;
+  color: #777;
+  font-size: 14px;
 }
 
 .tabs {
@@ -183,3 +200,4 @@ export default {
   margin-bottom: 10px;
 }
 </style>
+

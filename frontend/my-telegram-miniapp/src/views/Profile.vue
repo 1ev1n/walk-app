@@ -8,13 +8,15 @@
       </router-link>
     </div>
     <div v-if="userData" class="profile-content">
-      <div class="avatar-container">
-        <img :src="userData.image_url" alt="Avatar" class="avatar"/>
-      </div>
-      <div class="user-info">
-        <p class="username">Имя пользователя: {{ userData.username }}</p>
-        <p class="first-name">Имя: {{ userData.first_name }}</p>
-        <p class="description">О себе: {{ userData.description }}</p>
+      <div class="profile-info">
+        <div class="avatar-container">
+          <img :src="userData.image_url" alt="Avatar" class="avatar"/>
+        </div>
+        <div class="user-info">
+          <p class="username">Имя пользователя: {{ userData.username }}</p>
+          <p class="first-name">Имя: {{ userData.first_name }}</p>
+          <p class="description">О себе: {{ userData.description }}</p>
+        </div>
       </div>
     </div>
     <div v-else class="loading">
@@ -25,6 +27,7 @@
     </div>
   </div>
 </template>
+
 
 <script>
 import axios from 'axios';
@@ -59,6 +62,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 
@@ -119,18 +123,26 @@ body, html {
   background-color: #A9A9A9;
 }
 
-.avatar-container {
-  position: absolute;
-  width: 204px;
-  height: 235px;
-  left: 11px;
-  top: 123px;
-  background: #D9D9D9;
-  border-radius: 40px;
+/* Контейнер для аватарки и информации */
+.profile-info {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-top: 40px;
 }
+
+
+.avatar-container {
+  width: 120px;
+  height: 120px;
+  background: #D9D9D9;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 30px;
+}
+
 
 .avatar {
   width: 100px;
@@ -139,17 +151,17 @@ body, html {
   object-fit: cover;
 }
 
+
 .user-info {
-  position: absolute;
-  width: 330px;
-  left: calc(50% - 330px / 2);
-  top: 406px;
   font-family: 'Inter', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .username, .first-name, .description {
-  margin: 10px 0;
-  font-size: 20px;
+  margin: 5px 0;
+  font-size: 18px;
 }
 
 .username {
@@ -161,3 +173,4 @@ body, html {
   color: #888;
 }
 </style>
+
