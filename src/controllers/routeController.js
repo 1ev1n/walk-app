@@ -39,13 +39,19 @@ const createRoute = async (req, res) => {
 const getRouteById = async (req, res) => {
     try {
         const { id } = req.params;
-        const route = await Route.findById(id);
+
+        // ✅ Validate that ID is a number
+        if (!/^\d+$/.test(id)) {
+            return res.status(400).json({ message: 'Неверный ID маршрута' });
+        }
+
+        const route = await Route.findById(parseInt(id));  // ✅ Use parseInt just to be safe
         if (!route) {
             return res.status(404).json({ message: 'Маршрут не найден' });
         }
 
-        const points = await Point.findByRouteId(id);
-        route.points = points; // Добавляем точки к маршруту
+        const points = await Point.findByRouteId(route.id);
+        route.points = points;
         res.json(route);
     } catch (error) {
         console.error(error);

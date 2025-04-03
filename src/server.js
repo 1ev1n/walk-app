@@ -13,11 +13,11 @@ const port = process.env.PORT || 3000;
 const { CORS_ORIGIN } = process.env;
 
 app.use(cors({
-    origin: CORS_ORIGIN, // Очень важно правильно настроить для Mini App
+    origin: 'http://localhost:5173', // ✅ hardcoded for development
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    credentials: true,
-    optionsSuccessStatus: 204
+    credentials: true
 }));
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); // Для обработки данных из Telegram
 
@@ -27,6 +27,11 @@ app.use('/api/routes', routeRoutes);
 app.use('/api/likes', likeRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/favorites', favoriteRoutes);
+
+// default fallback
+app.get('/', (req, res) => {
+    res.send('API is running');
+});
 
 // Start server
 app.listen(port, () => {

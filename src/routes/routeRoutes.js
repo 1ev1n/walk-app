@@ -1,25 +1,24 @@
-// src/routes/routeRoutes.js
 const express = require('express');
 const router = express.Router();
 const routeController = require('../controllers/routeController');
-const { authenticate } = require('../middleware/authMiddleware'); // Middleware для проверки авторизации
+const { authenticate } = require('../middleware/authMiddleware');
 
-// Создание маршрута
+// ✅ Specific routes FIRST
+router.get('/user', authenticate, routeController.getRoutesByUser);
+
+// ✅ Create new route
 router.post('/', authenticate, routeController.createRoute);
 
-// Получение маршрута по ID
-router.get('/:id', routeController.getRouteById);
-
-// Получение всех маршрутов (с пагинацией и фильтрацией)
+// ✅ Get all routes
 router.get('/', routeController.getAllRoutes);
 
-// Обновление маршрута
+// ✅ Update route
 router.put('/:id', authenticate, routeController.updateRoute);
 
-// Удаление маршрута
+// ✅ Delete route
 router.delete('/:id', authenticate, routeController.deleteRoute);
 
-// Получение маршрутов пользователя
-router.get('/user', authenticate, routeController.getRoutesByUser);
+// ✅ Finally, catch /:id LAST to prevent "favorites" conflict
+router.get('/:id', routeController.getRouteById);
 
 module.exports = router;

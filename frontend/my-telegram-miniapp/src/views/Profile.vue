@@ -46,7 +46,11 @@ export default {
     // Функция для получения данных пользователя
     async fetchUserData() {
       try {
-        const response = await axios.get('http://localhost:3000/api/user/profile');
+        const response = await axios.get('http://localhost:3000/api/users/profile', {
+          headers: {
+            'x-dev-user': 'true', // 👈 tells backend to use fake user
+          }
+        });
         this.userData = response.data;
       } catch (error) {
         console.error('Ошибка при загрузке данных пользователя:', error);

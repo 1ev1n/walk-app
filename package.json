@@ -19,6 +19,7 @@
     "express-session": "^1.18.1",
     "node-telegram-bot-api": "^0.66.0",
     "pg": "^8.14.1",
+    "vite": "^6.2.4",
     "vue-router": "^4.5.0"
   }
 }

@@ -35,6 +35,7 @@
       </div>
 
       <div v-if="activeTab === 'my'" class="content">
+        <button class="add-route" @click="goToRouteEdit">+</button>
         <template v-if="myRoutes.length">
           <RouteCard v-for="route in myRoutes" :key="route.id" :routeId="route.id" />
         </template>
@@ -58,6 +59,7 @@
 <script>
 import RouteCard from './Route_card.vue';
 import axios from 'axios';
+import { useRouter } from 'vue-router';
 
 export default {
   name: 'ProfileMenu',
@@ -66,31 +68,43 @@ export default {
   },
   data() {
     return {
-      activeTab: 'my', // Начальная активная вкладка
+      activeTab: 'my',
       favoriteRoutes: [],
       myRoutes: [],
       feedRoutes: [],
     };
   },
+  setup() {
+    const router = useRouter();
 
+    const goToRouteEdit = () => {
+      router.push('/map');
+    };
+
+    return { goToRouteEdit };
+  },
   mounted() {
-    this.fetchRoutes(); // Загружаем маршруты при монтировании
+    this.fetchRoutes();
   },
   methods: {
-
     setActiveTab(tab) {
-      this.activeTab = tab; // Меняем активную вкладку при клике
+      this.activeTab = tab;
     },
-
     async fetchRoutes() {
       try {
-        const favoritesResponse = await axios.get('http://localhost:3000/api/routes/favorites');
+        const favoritesResponse = await axios.get('http://localhost:3000/api/favorites', {
+          headers: { 'x-dev-user': 'true' }
+        });
         this.favoriteRoutes = favoritesResponse.data;
 
-        const myResponse = await axios.get('http://localhost:3000/api/routes/my');
+        const myResponse = await axios.get('http://localhost:3000/api/routes/user', {
+          headers: { 'x-dev-user': 'true' }
+        });
         this.myRoutes = myResponse.data;
 
-        const feedResponse = await axios.get('http://localhost:3000/api/routes/feed');
+        const feedResponse = await axios.get('http://localhost:3000/api/routes', {
+          headers: { 'x-dev-user': 'true' }
+        });
         this.feedRoutes = feedResponse.data;
       } catch (error) {
         console.error('Ошибка при загрузке данных маршрутов:', error);
@@ -106,7 +120,7 @@ export default {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 60vh; /* 3/5 экрана */
+  height: 60vh;
   background-color: #fff;
   padding: 20px;
   box-sizing: border-box;
@@ -144,6 +158,7 @@ export default {
 .content {
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
 .content p {
@@ -151,5 +166,20 @@ export default {
   color: #777;
   text-align: center;
   margin-top: 20px;
+}
+
+.add-route {
+  font-size: 24px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-bottom: 10px;
 }
 </style>
