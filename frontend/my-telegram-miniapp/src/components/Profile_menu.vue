@@ -37,12 +37,12 @@
 </template>
 
 <script>
-import RouteFeed from './RouteFeed.vue';
+import RouteFeed from './Route_Feed.vue';
 
 export default {
   name: 'ProfileMenu',
   components: {
-    RouteFeed
+    RouteFeed: RouteFeed
   },
   props: {
     activeTab: String,

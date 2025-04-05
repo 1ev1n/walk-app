@@ -1,54 +1,56 @@
 <template>
-  <div class="map-container">
 
-    <div class="header">
-      <h2 class="page-title">Walky</h2>
-      <router-link to="/profile" class="profile-link">
-        <img src="../assets/User.png" alt="User Icon" class="user-icon" />
-      </router-link>
+  <div class="header">
+    <h2 class="page-title">Walky</h2>
+    <router-link to="/profile" class="profile-link">
+      <img src="../assets/User.png" alt="User Icon" class="user-icon" />
+    </router-link>
+  </div>
+
+  <div class="map-container">
+    <div class="map-menu-wrapper">
+      <MapMenu :routes="routes" />
     </div>
 
-    <!-- Карта или заглушка -->
     <div v-if="mapLoaded" ref="map" class="map"></div>
+
     <div v-else class="map-placeholder">
       <p>⚠️ Карта не загружена</p>
     </div>
-
-    <RouteEdit v-if="showRouteEdit" @close="showRouteEdit = false" />
   </div>
 </template>
 
 <script>
-import RouteEdit from "../components/Route_edit.vue";
+import MapMenu from "../components/Map_menu.vue";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import axios from 'axios';
 
 export default {
   name: "Map",
-  components: { RouteEdit },
+  components: { MapMenu },
   data() {
     return {
-      map: null,
+      routes: [],
       mapLoaded: false,
       showRouteEdit: false,
     };
   },
   mounted() {
     this.loadOpenStreetMap();
-    this.checkEditRoute();
-  },
-  watch: {
-    "$route.query": {
-      handler() {
-        this.checkEditRoute();
-      },
-      immediate: true,
-    },
+    this.fetchRoutesData();
   },
   methods: {
-    checkEditRoute() {
-      this.showRouteEdit = this.$route.query.editRoute === "true";
+    async fetchRoutesData() {
+      try {
+        const response = await axios.get('http://localhost:3000/api/routes');
+        this.routes = response.data;
+        console.log("Маршруты загружены:", this.routes); // Отладка
+      } catch (error) {
+        console.error('Ошибка при загрузке данных маршрутов:', error);
+      }
     },
+
     loadOpenStreetMap() {
       this.mapLoaded = true;
 
@@ -73,9 +75,10 @@ export default {
 </script>
 
 
-<style scoped>
 
-body, html {
+<style scoped>
+body,
+html {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -92,6 +95,7 @@ body, html {
   text-align: center;
   box-sizing: border-box;
   overflow: hidden;
+  z-index: -1;
 }
 
 /* Заголовок */
@@ -118,6 +122,7 @@ body, html {
   line-height: 38px;
   color: #000000;
   margin: 0;
+  margin-left: 20px;
 }
 
 .profile-link {
@@ -137,6 +142,18 @@ body, html {
   height: 100%;
 }
 
+
+.map-menu-wrapper {
+  position: fixed;
+  bottom: 20px;
+  left: 2.5%;
+  width: 95%;
+  height: 40%;
+  z-index: 1001;
+  box-sizing: border-box;
+  pointer-events: auto;
+}
+
 /* Карта */
 .map {
   position: absolute;
@@ -144,10 +161,9 @@ body, html {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 0;
+  z-index: -1;
 }
 
-/* Заглушка при отсутствии карты */
 .map-placeholder {
   position: absolute;
   top: 0;
@@ -163,5 +179,4 @@ body, html {
   justify-content: center;
   z-index: 0;
 }
-
 </style>

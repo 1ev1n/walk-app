@@ -47,6 +47,7 @@ export default {
 
 
 <style scoped>
+
 .route-card {
   display: flex;
   background-color: #fff;
@@ -55,7 +56,7 @@ export default {
   margin-bottom: 20px;
   padding: 10px;
   overflow: hidden;
-  height: 33%; /* Карточка занимает 1/3 высоты меню */
+  height: 33%;
   box-sizing: border-box;
 }
 
