@@ -1,10 +1,10 @@
 <template>
   <div class="map-container">
-    <!-- Верхняя панель -->
+
     <div class="header">
-      <h1 class="page-title">Walky</h1>
+      <h2 class="page-title">Walky</h2>
       <router-link to="/profile" class="profile-link">
-        <img src="../assets/icons/avatar.png" alt="Profile" class="profile-icon" />
+        <img src="../assets/User.png" alt="User Icon" class="user-icon" />
       </router-link>
     </div>
 
@@ -14,25 +14,27 @@
       <p>⚠️ Карта не загружена</p>
     </div>
 
-    <!-- Форма редактирования маршрута -->
     <RouteEdit v-if="showRouteEdit" @close="showRouteEdit = false" />
   </div>
 </template>
 
 <script>
 import RouteEdit from "../components/Route_edit.vue";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 export default {
   name: "Map",
   components: { RouteEdit },
   data() {
     return {
-      mapLoaded: false, // Флаг загрузки карты
-      showRouteEdit: false, // Флаг показа формы редактирования
+      map: null,
+      mapLoaded: false,
+      showRouteEdit: false,
     };
   },
   mounted() {
-    this.loadGoogleMaps();
+    this.loadOpenStreetMap();
     this.checkEditRoute();
   },
   watch: {
@@ -40,77 +42,76 @@ export default {
       handler() {
         this.checkEditRoute();
       },
-      immediate: true, // Проверить при загрузке страницы
+      immediate: true,
     },
   },
   methods: {
     checkEditRoute() {
       this.showRouteEdit = this.$route.query.editRoute === "true";
     },
+    loadOpenStreetMap() {
+      this.mapLoaded = true;
 
-    loadGoogleMaps() {
-      if (window.google && window.google.maps) {
-        this.initMap();
-        return;
-      }
+      this.$nextTick(() => {
+        if (!this.$refs.map) return;
 
-      const script = document.createElement("script");
-      script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY`;
-      script.async = true;
-      script.defer = true;
-      document.head.appendChild(script);
+        this.map = L.map(this.$refs.map).setView([55.7558, 37.6173], 12);
 
-      script.onload = () => {
-        this.mapLoaded = true;
-        this.initMap();
-      };
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution:
+              '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+        }).addTo(this.map);
 
-      script.onerror = () => {
-        console.error("Ошибка загрузки Google Maps API");
-        this.mapLoaded = false;
-      };
-    },
-
-    initMap() {
-      if (!this.$refs.map) return;
-      this.map = new google.maps.Map(this.$refs.map, {
-        center: { lat: 55.7558, lng: 37.6173 },
-        zoom: 12,
-      });
-
-      new google.maps.Marker({
-        position: { lat: 55.7558, lng: 37.6173 },
-        map: this.map,
-        title: "Москва",
+        L.marker([55.7558, 37.6173])
+            .addTo(this.map)
+            .bindPopup("Москва")
+            .openPopup();
       });
     },
   },
 };
 </script>
 
+
 <style scoped>
-/* Контейнер карты */
-.map-container {
-  position: relative;
+
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
   width: 100%;
-  height: 100vh;
+  overflow: hidden;
 }
 
-/* Верхняя панель */
+.map-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Заголовок */
 .header {
+  top: 20px;
+  left: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  right: 20px;
-  z-index: 10;
+  position: fixed;
+  width: 100%;
+  z-index: 1000;
 }
 
-/* Логотип */
+.header * {
+  pointer-events: auto;
+}
+
 .page-title {
-  font-family: "Cookie";
+  font-family: 'Cookie';
   font-style: normal;
   font-weight: 400;
   font-size: 34px;
@@ -119,43 +120,48 @@ export default {
   margin: 0;
 }
 
-/* Кнопка профиля */
 .profile-link {
+  position: absolute;
+  right: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #d9d9d9;
   width: 40px;
   height: 40px;
   border-radius: 50%;
   text-decoration: none;
 }
 
-.profile-icon {
-  width: 80%;
-  height: 80%;
-}
-
-.profile-link:hover {
-  background-color: #a9a9a9;
-}
-
-/* Карта */
-.map {
+.user-icon {
   width: 100%;
   height: 100%;
 }
 
+/* Карта */
+.map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
 /* Заглушка при отсутствии карты */
 .map-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   background-color: #f4f4f4;
   color: #777;
   font-size: 18px;
   border: 1px dashed #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 0;
 }
+
 </style>
