@@ -1,15 +1,16 @@
 <template>
-  <div class="route-card">
+  <div v-if="routeData.name" class="route-card">
     <div class="route-card-content">
       <div class="route-card-image">
-        <img :src="routeData.image_url" alt="Route Image" class="route-image"/>
+        <img :src="routeData.image_url || 'https://via.placeholder.com/150'" alt="Route Image" class="route-image"/>
       </div>
       <div class="route-card-text">
-        <h3>{{ routeData.title }}</h3>
+        <h3>{{ routeData.name }}</h3>
         <p>{{ routeData.description }}</p>
       </div>
     </div>
   </div>
+  <div v-else class="loading">Загрузка маршрута...</div>
 </template>
 
 <script>
@@ -25,11 +26,11 @@ export default {
   },
   data() {
     return {
-      routeData: null, // Данные маршрута
+      routeData: {},
     };
   },
   mounted() {
-    this.fetchRouteData(); // Загружаем данные маршрута при монтировании
+    this.fetchRouteData();
   },
   methods: {
     async fetchRouteData() {
@@ -43,6 +44,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 .route-card {

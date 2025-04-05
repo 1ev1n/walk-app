@@ -1,193 +1,153 @@
 <template>
   <div class="profile-menu">
+    <!-- ВКЛАДКИ -->
     <div class="tabs">
-      <div
+      <div class="selector" :style="{ left: selectorLeft }"></div>
+      <a
           class="tab"
           :class="{ active: activeTab === 'favorites' }"
-          @click="setActiveTab('favorites')"
+          @click="$emit('changeTab', 'favorites')"
       >
         Избранное
-      </div>
-      <div
+      </a>
+      <a
           class="tab"
           :class="{ active: activeTab === 'my' }"
-          @click="setActiveTab('my')"
+          @click="$emit('changeTab', 'my')"
       >
         Моё
-      </div>
-      <div
+      </a>
+      <a
           class="tab"
           :class="{ active: activeTab === 'feed' }"
-          @click="setActiveTab('feed')"
+          @click="$emit('changeTab', 'feed')"
       >
         Лента
-      </div>
+      </a>
     </div>
 
-    <div class="tab-content">
-      <div v-if="activeTab === 'favorites'" class="content">
-        <template v-if="favoriteRoutes.length">
-          <RouteCard v-for="route in favoriteRoutes" :key="route.id" :routeId="route.id" />
-        </template>
-        <template v-else>
-          <p>Тыкни лайк и тут что-то появится</p>
-        </template>
-      </div>
+    <div class="card-container" v-if="activeTab === 'feed'">
+      <RouteFeed :tab="activeTab" :userData="userData" />
+    </div>
 
-      <div v-if="activeTab === 'my'" class="content">
-        <button class="add-route" @click="goToRouteEdit">+</button>
-        <template v-if="myRoutes.length">
-          <RouteCard v-for="route in myRoutes" :key="route.id" :routeId="route.id" />
-        </template>
-        <template v-else>
-          <p>Тыкни лайк и тут что-то появится</p>
-        </template>
-      </div>
-
-      <div v-if="activeTab === 'feed'" class="content">
-        <template v-if="feedRoutes.length">
-          <RouteCard v-for="route in feedRoutes" :key="route.id" :routeId="route.id" />
-        </template>
-        <template v-else>
-          <p>Тыкни лайк и тут что-то появится</p>
-        </template>
-      </div>
+    <div v-if="activeTab === 'my'" class="button-container">
+      <button class="add-route" @click="goToRouteEdit">+</button>
     </div>
   </div>
 </template>
 
-
 <script>
-import RouteCard from './Route_card.vue';
-import axios from 'axios';
-import { useRouter } from 'vue-router';
+import RouteFeed from './RouteFeed.vue';
 
 export default {
   name: 'ProfileMenu',
   components: {
-    RouteCard,
+    RouteFeed
   },
-  data() {
-    return {
-      activeTab: 'my',  // Изначально активная вкладка
-      favoriteRoutes: [],
-      myRoutes: [],
-      feedRoutes: [],
-    };
-  },
-  setup() {
-    const router = useRouter();
-
-    const goToRouteEdit = () => {
-      router.push('/map');
-    };
-
-    return { goToRouteEdit };
-  },
-  mounted() {
-    this.fetchRoutes(); // Загрузка маршрутов при монтировании
+  props: {
+    activeTab: String,
+    userData: Object
   },
   methods: {
-    setActiveTab(tab) {
-      console.log("Переключение на вкладку:", tab); // Отладка
-      this.activeTab = tab; // Устанавливаем активную вкладку
-    },
-    async fetchRoutes() {
-      try {
-        const favoritesResponse = await axios.get('http://localhost:3000/api/favorites', {
-          headers: { 'x-dev-user': 'true' }
-        });
-        this.favoriteRoutes = favoritesResponse.data;
-
-        const myResponse = await axios.get('http://localhost:3000/api/routes/user', {
-          headers: { 'x-dev-user': 'true' }
-        });
-        this.myRoutes = myResponse.data;
-
-        const feedResponse = await axios.get('http://localhost:3000/api/routes', {
-          headers: { 'x-dev-user': 'true' }
-        });
-        this.feedRoutes = feedResponse.data;
-
-      } catch (error) {
-        console.error('Ошибка при загрузке данных маршрутов:', error);
-      }
-    },
+    goToRouteEdit() {
+      this.$router.push('/map');
+    }
   },
+  computed: {
+    selectorLeft() {
+      switch (this.activeTab) {
+        case 'favorites': return '0%';
+        case 'my': return '33.33%';
+        case 'feed': return '66.66%';
+        default: return '0%';
+      }
+    }
+  }
 };
 </script>
 
-
 <style scoped>
+@import url('https://fonts.googleapis.com/css?family=Roboto');
 
 .profile-menu {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
   height: 50vh;
   background-color: #fff;
-  padding: 20px;
-  box-sizing: border-box;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  font-family: 'Roboto', sans-serif;
   display: flex;
   flex-direction: column;
-}
-
-.user-details h2 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.user-details p {
-  margin: 0;
-  color: #777;
-  font-size: 14px;
+  z-index: 999;
 }
 
 .tabs {
+  position: relative;
   display: flex;
-  margin-bottom: 20px;
-  justify-content: center;
+  justify-content: space-around;
+  background: #fff;
+  border-radius: 50px;
+  padding: 5px;
+  width: 90%;
+  max-width: 500px;
+  margin: 10px auto 5px;
+  z-index: 2;
 }
 
 .tab {
-  cursor: pointer;
+  text-decoration: none;
+  color: #777;
+  text-transform: uppercase;
   padding: 10px 20px;
-  margin-right: 20px;
-  background-color: #f4f4f4;
-  border-radius: 5px;
+  flex: 1;
   text-align: center;
-  font-size: 18px;
+  z-index: 2;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  font-size: 14px;
+  font-weight: 500;
+  position: relative;
 }
 
 .tab.active {
-  background-color: #D9D9D9;
+  color: #fff;
   font-weight: bold;
 }
 
-.tab-content {
-  padding: 20px;
+.selector {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 33.33%;
+  height: 100%;
+  border-radius: 50px;
+  z-index: 1;
+  background: linear-gradient(45deg, #F35B04 0%, #7678ED 100%);
+  transition: left 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.card-container {
+  flex: 1;
   overflow-y: auto;
+  padding: 10px 20px 70px;
+  box-sizing: border-box;
+  width: 100%;
 }
 
-.content {
+.button-container {
+  position: absolute;
+  bottom: 10px;
+  width: 100%;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.content p {
-  font-size: 18px;
-  color: #777;
-  text-align: center;
-  margin-top: 20px;
+  justify-content: center;
+  z-index: 3;
 }
 
 .add-route {
-  font-size: 24px;
-  background-color: #28a745;
+  font-size: 28px;
+  font-weight: 570;
+  background: linear-gradient(45deg, #7678ED 0%, #3D348B 100%);
   color: white;
   border: none;
   border-radius: 50%;
@@ -197,7 +157,5 @@ export default {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  margin-bottom: 10px;
 }
 </style>
-

@@ -1,33 +1,33 @@
 <template>
   <div class="profile-container">
+
     <div class="header">
       <h2 class="page-title">Walky</h2>
-      <!-- Кнопка с иконкой -->
       <router-link to="/map" class="map-link">
-        <img src="../assets/icons/map.png" alt="Map Icon" class="map-icon"/>
+        <img src="../assets/Map.png" alt="Map Icon" class="map-icon" />
       </router-link>
     </div>
+
     <div v-if="userData" class="profile-content">
       <div class="profile-info">
         <div class="avatar-container">
-          <img :src="userData.image_url" alt="Avatar" class="avatar"/>
+          <img :src="userData.image_url" alt="Avatar" class="avatar" />
         </div>
         <div class="user-info">
-          <p class="username">Имя пользователя: {{ userData.username }}</p>
-          <p class="first-name">Имя: {{ userData.first_name }}</p>
-          <p class="description">О себе: {{ userData.description }}</p>
+          <p class="username">{{ userData.username }}</p>
+          <p class="first-name">{{ userData.first_name }}</p>
+          <p class="description">{{ userData.description }}</p>
         </div>
       </div>
+
+      <ProfileMenu :activeTab="activeTab" :userData="userData" @changeTab="activeTab = $event" />
     </div>
+
     <div v-else class="loading">
       <p>Загрузка данных...</p>
     </div>
-    <div>
-      <ProfileMenu />
-    </div>
   </div>
 </template>
-
 
 <script>
 import axios from 'axios';
@@ -35,34 +35,30 @@ import ProfileMenu from "../components/Profile_menu.vue";
 
 export default {
   name: 'Profile',
-  components: {ProfileMenu},
+  components: { ProfileMenu },
   data() {
     return {
-      userData: null, // Данные пользователя, которые получаем с API
+      userData: null,
+      activeTab: 'my'
     };
   },
   mounted() {
-    // Когда компонент монтируется, делаем запрос к API
     this.fetchUserData();
   },
   methods: {
-    // Функция для получения данных пользователя
     async fetchUserData() {
       try {
         const response = await axios.get('http://localhost:3000/api/users/profile', {
-          headers: {
-            'x-dev-user': 'true', // 👈 tells backend to use fake user
-          }
+          headers: { 'x-dev-user': 'true' }
         });
         this.userData = response.data;
       } catch (error) {
         console.error('Ошибка при загрузке данных пользователя:', error);
       }
-    },
-  },
+    }
+  }
 };
 </script>
-
 
 <style scoped>
 
@@ -75,13 +71,15 @@ body, html {
 }
 
 .profile-container {
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  height: 100vh;
-  background: #FFFFFF;
+  height: 100%;
   padding: 20px;
   text-align: center;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .header {
@@ -107,7 +105,6 @@ body, html {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #D9D9D9;
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -115,48 +112,42 @@ body, html {
 }
 
 .map-icon {
-  width: 80%;
-  height: 80%;
+  width: 100%;
+  height: 100%;
 }
 
-.map-link:hover {
-  background-color: #A9A9A9;
-}
-
-/* Контейнер для аватарки и информации */
 .profile-info {
   display: flex;
   justify-content: center;
   align-items: center;
   margin-top: 40px;
+  flex-direction: column;
 }
 
-
+/* Аватарка */
 .avatar-container {
-  width: 120px;
-  height: 120px;
+  height: 40%;
   background: #D9D9D9;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-right: 30px;
+  margin-bottom: 20px;
+  padding: 5px;
 }
 
-
 .avatar {
-  width: 100px;
-  height: 100px;
+  width: 130px;
+  height: 130px;
   border-radius: 50%;
   object-fit: cover;
 }
 
-
 .user-info {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Work Sans', sans-serif;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .username, .first-name, .description {
@@ -165,12 +156,17 @@ body, html {
 }
 
 .username {
-  font-weight: bold;
+  font-size: 4vh;
+  font-weight: 700;
 }
 
-.loading {
-  font-size: 18px;
-  color: #888;
+.first-name {
+  font-size: 3svh;
 }
+
+.description {
+  font-size: 2vh;
+  color: #555555;
+}
+
 </style>
-
