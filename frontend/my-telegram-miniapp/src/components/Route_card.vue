@@ -1,5 +1,5 @@
 <template>
-  <div v-if="routeData.name" class="route-card">
+  <div v-if="routeData.name" class="route-card" @click="goToRoute">
     <div class="route-card-content">
       <div class="route-card-image">
         <img :src="routeData.image_url || 'https://via.placeholder.com/150'" alt="Route Image" class="route-image"/>
@@ -41,13 +41,14 @@ export default {
         console.error('Ошибка при загрузке данных маршрута:', error);
       }
     },
+    goToRoute() {
+      this.$router.push({ name: 'RouteInf', params: { id: this.routeId } });
+    },
   },
 };
 </script>
 
-
 <style scoped>
-
 .route-card {
   display: flex;
   background-color: #fff;
@@ -58,40 +59,41 @@ export default {
   overflow: hidden;
   height: 33%;
   box-sizing: border-box;
+  cursor: pointer;
+  transition: transform 0.2s;
 }
-
+.route-card:hover {
+  transform: scale(1.01);
+}
 .route-card-content {
   display: flex;
   width: 100%;
   height: 100%;
 }
-
 .route-card-image {
   flex: 1;
   max-width: 150px;
-  margin-right: 20px;
+  margin-left: 20px;
 }
-
 .route-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
   border-radius: 8px;
 }
-
 .route-card-text {
   flex: 3;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
+  font-family: 'Work Sans', sans-serif;
+  text-align: left;
 }
-
 .route-card-text h3 {
   font-size: 20px;
   margin: 0;
   color: #333;
 }
-
 .route-card-text p {
   font-size: 16px;
   color: #555;

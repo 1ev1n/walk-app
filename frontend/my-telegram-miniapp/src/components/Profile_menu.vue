@@ -26,12 +26,14 @@
       </a>
     </div>
 
+    <!-- КАРТОЧКИ ДЛЯ ЛЕНТЫ -->
     <div class="card-container" v-if="activeTab === 'feed'">
       <RouteFeed :tab="activeTab" :userData="userData" />
     </div>
 
+    <!-- КНОПКА ДОБАВЛЕНИЯ МАРШРУТА -->
     <div v-if="activeTab === 'my'" class="button-container">
-      <button class="add-route" @click="goToRouteEdit">+</button>
+      <button class="add-route" @click="goToMapRouteEdit">+</button>
     </div>
   </div>
 </template>
@@ -42,25 +44,29 @@ import RouteFeed from './Route_Feed.vue';
 export default {
   name: 'ProfileMenu',
   components: {
-    RouteFeed: RouteFeed
+    RouteFeed
   },
   props: {
     activeTab: String,
     userData: Object
   },
-  methods: {
-    goToRouteEdit() {
-      this.$router.push('/map');
-    }
-  },
   computed: {
     selectorLeft() {
       switch (this.activeTab) {
-        case 'favorites': return '0%';
-        case 'my': return '33.33%';
-        case 'feed': return '66.66%';
-        default: return '0%';
+        case 'favorites':
+          return '0%';
+        case 'my':
+          return '33.33%';
+        case 'feed':
+          return '66.66%';
+        default:
+          return '0%';
       }
+    }
+  },
+  methods: {
+    goToMapRouteEdit() {
+      this.$router.push({ path: '/map', query: { edit: 'true' } });
     }
   }
 };

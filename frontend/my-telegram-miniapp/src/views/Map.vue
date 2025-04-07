@@ -1,19 +1,19 @@
 <template>
-
-  <div class="header">
-    <h2 class="page-title">Walky</h2>
-    <router-link to="/profile" class="profile-link">
-      <img src="../assets/User.png" alt="User Icon" class="user-icon" />
-    </router-link>
-  </div>
-
   <div class="map-container">
-    <div class="map-menu-wrapper">
+    <div class="header">
+      <h2 class="page-title">Walky</h2>
+      <router-link to="/profile" class="profile-link">
+        <img src="../assets/User.png" alt="User Icon" class="user-icon" />
+      </router-link>
+    </div>
+
+    <div v-if="showMapMenu" class="map-menu-wrapper">
       <MapMenu :routes="routes" />
     </div>
 
-    <div v-if="mapLoaded" ref="map" class="map"></div>
+    <RouteEdit v-if="showRouteEdit" @close="showRouteEdit = false" />
 
+    <div v-if="mapLoaded" ref="map" class="map"></div>
     <div v-else class="map-placeholder">
       <p>⚠️ Карта не загружена</p>
     </div>
@@ -22,19 +22,34 @@
 
 <script>
 import MapMenu from "../components/Map_menu.vue";
+import RouteEdit from "../components/Route_edit.vue";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import axios from 'axios';
 
 export default {
   name: "Map",
-  components: { MapMenu },
+  components: {
+    MapMenu,
+    RouteEdit
+  },
   data() {
     return {
       routes: [],
       mapLoaded: false,
+      showMapMenu: false,
       showRouteEdit: false,
     };
+  },
+  watch: {
+    // Следим за маршрутом, чтобы рендерить нужный компонент
+    $route: {
+      immediate: true,
+      handler(to) {
+        this.showMapMenu = to.name === 'Map';
+        this.showRouteEdit = to.query.edit === 'true';
+      }
+    }
   },
   mounted() {
     this.loadOpenStreetMap();
@@ -45,20 +60,16 @@ export default {
       try {
         const response = await axios.get('http://localhost:3000/api/routes');
         this.routes = response.data;
-        console.log("Маршруты загружены:", this.routes); // Отладка
+        console.log("Маршруты загружены:", this.routes);
       } catch (error) {
         console.error('Ошибка при загрузке данных маршрутов:', error);
       }
     },
-
     loadOpenStreetMap() {
       this.mapLoaded = true;
-
       this.$nextTick(() => {
         if (!this.$refs.map) return;
-
         this.map = L.map(this.$refs.map).setView([55.7558, 37.6173], 12);
-
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution:
               '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
@@ -73,8 +84,6 @@ export default {
   },
 };
 </script>
-
-
 
 <style scoped>
 body,
@@ -95,10 +104,8 @@ html {
   text-align: center;
   box-sizing: border-box;
   overflow: hidden;
-  z-index: -1;
 }
 
-/* Заголовок */
 .header {
   top: 20px;
   left: 20px;
@@ -142,7 +149,6 @@ html {
   height: 100%;
 }
 
-
 .map-menu-wrapper {
   position: fixed;
   bottom: 20px;
@@ -154,7 +160,6 @@ html {
   pointer-events: auto;
 }
 
-/* Карта */
 .map {
   position: absolute;
   top: 0;

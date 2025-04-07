@@ -1,31 +1,25 @@
 <template>
   <div class="menu-container">
-    <!-- Отображение данных тегов с отладочными сообщениями -->
+
+    <!-- ТЕГИ -->
     <div class="tag-scroll">
+      <div class="selector" :style="{ left: selectorLeft }"></div>
       <button
           v-for="tag in tags"
           :key="tag"
           class="tag-button"
-          @click="filterRoutesByTag(tag)"
-          :class="{ active: isTagActive(tag) }"
+          @click="changeTag(tag)"
+          :class="{ active: activeTag === tag }"
       >
         {{ tag }}
-      </button>
-      <button
-          class="tag-button"
-          @click="filterRoutesByTag('all')"
-          :class="{ active: isTagActive('all') }"
-      >
-        All
       </button>
     </div>
 
     <div class="card-container">
-      <!-- Вывод отфильтрованных маршрутов -->
       <RouteFeed :tab="activeTag" :routes="filteredRoutes" :userData="userData" />
+      <p v-if="filteredRoutes.length === 0">Нет маршрутов с таким тегом</p>
     </div>
 
-    <p v-if="filteredRoutes.length === 0">Нет маршрутов с таким тегом</p>
   </div>
 </template>
 
@@ -34,55 +28,57 @@ import RouteFeed from './Route_Feed.vue';
 
 export default {
   name: 'MapMenu',
-  components: { RouteFeed },
+  components: {
+    RouteFeed
+  },
   props: {
-    routes: Array, // Данные маршрутов
+    routes: {
+      type: Array,
+      required: true
+    },
+    userData: {
+      type: Object,
+      required: true
+    }
   },
   data() {
     return {
-      filteredRoutes: this.routes,
-      tags: this.extractTagsFromRoutes(this.routes),
-      activeTag: 'all',
+      activeTag: 'all'
     };
   },
-  watch: {
-    routes(newRoutes) {
-      this.filteredRoutes = newRoutes;
-      this.tags = this.extractTagsFromRoutes(newRoutes);
-      console.log('Маршруты обновлены в MapMenu:', newRoutes); // Отладка
+  computed: {
+    tags() {
+      const tagSet = new Set();
+      this.routes.forEach(route => {
+        route.tags.forEach(tag => tagSet.add(tag));
+      });
+      return ['all', ...Array.from(tagSet)];
+    },
+
+    filteredRoutes() {
+      if (this.activeTag === 'all') return this.routes;
+      return this.routes.filter(route => route.tags.includes(this.activeTag));
+    },
+
+    selectorLeft() {
+      const index = this.tags.indexOf(this.activeTag);
+      if (index === -1) return '0%';
+      return `${(index / this.tags.length) * 100}%`;
     }
   },
   methods: {
-    extractTagsFromRoutes(routes) {
-      const tags = new Set();
-      routes.forEach(route => {
-        route.tags.forEach(tag => tags.add(tag));
-      });
-      return ['all', ...Array.from(tags)];
-    },
-
-    filterRoutesByTag(tag) {
+    changeTag(tag) {
       this.activeTag = tag;
-      if (tag === 'all') {
-        this.filteredRoutes = this.routes;
-      } else {
-        this.filteredRoutes = this.routes.filter(route =>
-            route.tags.includes(tag)
-        );
-      }
-    },
-
-    isTagActive(tag) {
-      return this.activeTag === tag;
     }
   }
 };
 </script>
 
+
 <style scoped>
+
 .menu-container {
-  background-color: #ffffffee;
-  backdrop-filter: blur(5px);
+  bottom: 10px;
   padding: 10px;
   border-bottom: 1px solid #ddd;
   position: relative;
@@ -102,6 +98,7 @@ export default {
 }
 
 .tag-button {
+  font-family: 'Work Sans', sans-serif;
   flex: 0 0 auto;
   padding: 6px 12px;
   border: none;
@@ -112,22 +109,20 @@ export default {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.tag-button:hover {
-  background-color: #d1d1d1;
-}
-
 .tag-button.active {
   background-color: #4caf50;
   color: white;
 }
 
 .card-container {
+  background: white;
   flex: 1;
   overflow-y: auto;
   padding: 10px 20px;
   box-sizing: border-box;
   width: 100%;
   max-height: 100%;
+  border-radius: 20px;
 }
 
 .routes-list p {
