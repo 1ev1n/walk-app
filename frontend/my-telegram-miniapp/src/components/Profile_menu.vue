@@ -1,6 +1,6 @@
 <template>
   <div class="profile-menu">
-    <!-- ВКЛАДКИ -->
+
     <div class="tabs">
       <div class="selector" :style="{ left: selectorLeft }"></div>
       <a
@@ -26,12 +26,10 @@
       </a>
     </div>
 
-    <!-- КАРТОЧКИ ДЛЯ ЛЕНТЫ -->
     <div class="card-container" v-if="activeTab === 'feed'">
       <RouteFeed :tab="activeTab" :userData="userData" />
     </div>
 
-    <!-- КНОПКА ДОБАВЛЕНИЯ МАРШРУТА -->
     <div v-if="activeTab === 'my'" class="button-container">
       <button class="add-route" @click="goToMapRouteEdit">+</button>
     </div>

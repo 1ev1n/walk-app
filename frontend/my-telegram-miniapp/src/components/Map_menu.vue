@@ -1,7 +1,6 @@
 <template>
   <div class="menu-container">
 
-    <!-- ТЕГИ -->
     <div class="tag-scroll">
       <div class="selector" :style="{ left: selectorLeft }"></div>
       <button
@@ -40,6 +39,9 @@ export default {
       type: Object,
       required: true
     }
+  },
+  mounted() {
+    console.log('Received routes:', this.routes);
   },
   data() {
     return {

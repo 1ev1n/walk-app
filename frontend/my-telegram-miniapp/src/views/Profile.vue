@@ -1,8 +1,8 @@
 <template>
   <div class="profile-container">
-
     <div class="header">
       <h2 class="page-title">Walky</h2>
+
       <router-link to="/map" class="map-link">
         <img src="../assets/Map.png" alt="Map Icon" class="map-icon" />
       </router-link>
@@ -59,6 +59,7 @@ export default {
   }
 };
 </script>
+
 
 <style scoped>
 

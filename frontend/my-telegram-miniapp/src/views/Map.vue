@@ -42,11 +42,12 @@ export default {
     };
   },
   watch: {
-    // Следим за маршрутом, чтобы рендерить нужный компонент
     $route: {
       immediate: true,
       handler(to) {
+
         this.showMapMenu = to.name === 'Map';
+
         this.showRouteEdit = to.query.edit === 'true';
       }
     }
@@ -84,6 +85,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 body,
