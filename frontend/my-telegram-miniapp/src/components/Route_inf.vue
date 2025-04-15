@@ -129,129 +129,156 @@ export default {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap');
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
 .route-inf {
   padding: 20px;
-  font-family: 'Work Sans', sans-serif;
+  font-family: 'Montserrat', sans-serif;
+  color: #333;
 }
 
 .back-button {
-  background: #f1f1f1;
+  background: none;
   border: none;
-  border-radius: 6px;
-  padding: 8px 12px;
+  color: #3D348B;
+  font-size: 1.2rem;
   cursor: pointer;
   margin-bottom: 20px;
-  font-size: 16px;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.back-button:hover {
+  color: #7678ED;
 }
 
 .route-details {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 30px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   margin-bottom: 20px;
 }
 
 .route-title {
-  font-size: 24px;
-  font-weight: bold;
-  color: #333;
+  font-size: 1.8rem;
   margin-bottom: 10px;
+  font-weight: 500;
 }
 
 .route-description {
-  font-size: 16px;
-  color: #666;
+  font-size: 1rem;
   margin-bottom: 10px;
 }
 
-.route-type, .route-author {
-  font-size: 14px;
-  color: #888;
+.route-type,
+.route-author {
+  font-size: 0.95rem;
+  color: #666;
+  margin-bottom: 5px;
 }
 
-.route-type span, .route-author span {
-  font-weight: bold;
+.route-type span,
+.route-author span {
+  font-weight: 400;
   color: #333;
 }
 
 .like-section {
-  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 15px;
 }
 
 .like-button {
-  background: none;
-  border: 1px solid #ccc;
-  padding: 6px 12px;
-  border-radius: 5px;
+  background: linear-gradient(to right, #7678ED, #3D348B);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 50px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 1rem;
+  transition: background 0.3s ease;
+}
+
+.like-button:hover {
+  background: linear-gradient(to right, #3D348B, #7678ED);
+}
+
+.map {
+  height: 250px;
+  width: 100%;
+  border-radius: 30px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
 .comments-section {
-  margin-top: 30px;
+  background-color: #f2f2f2;
+  padding: 20px;
+  border-radius: 30px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-.comments-toggle {
-  padding: 8px 12px;
-  background-color: #007bff;
+.comments-toggle,
+.toggle-comment-form,
+.submit-comment {
+  background: linear-gradient(to right, #7678ED, #3D348B);
   color: white;
   border: none;
-  border-radius: 5px;
+  padding: 10px 18px;
+  border-radius: 50px;
   cursor: pointer;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+  transition: background 0.3s ease;
+}
+
+.comments-toggle:hover,
+.toggle-comment-form:hover,
+.submit-comment:hover {
+  background: linear-gradient(to right, #3D348B, #7678ED);
 }
 
 .comments-list {
-  margin-top: 20px;
+  margin-bottom: 15px;
 }
 
 .comment {
-  background-color: #f9f9f9;
-  padding: 10px;
-  border-radius: 5px;
+  background-color: #ffffff;
+  padding: 15px;
+  border-radius: 20px;
   margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .comment-author {
-  font-weight: bold;
+  font-weight: 500;
+  margin-bottom: 5px;
 }
 
 .comment-text {
-  font-size: 14px;
-  color: #555;
-}
-
-.comment-form {
-  margin-top: 20px;
+  font-size: 0.95rem;
 }
 
 .comment-form textarea {
   width: 100%;
-  padding: 10px;
-  border-radius: 5px;
+  padding: 12px 16px;
   border: 1px solid #ccc;
-}
-
-.submit-comment {
-  padding: 8px 12px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-top: 10px;
-}
-
-.toggle-comment-form {
-  margin-top: 20px;
-  padding: 8px 12px;
-  background-color: #ffc107;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.map {
-  height: 500px;
-  width: 100%;
-  border-radius: 10px;
-  margin-top: 20px;
+  border-radius: 20px;
+  background-color: #ffffff;
+  resize: vertical;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+  outline: none;
 }
 </style>
+

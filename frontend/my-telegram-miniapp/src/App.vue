@@ -18,6 +18,11 @@ export default {
   width: 100vw;
 }
 
+body {
+  overflow-x: hidden;
+}
+
+
 header {
   background-color: #000;
   color: #fff;

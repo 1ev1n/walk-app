@@ -43,17 +43,19 @@ html, body {
 }
 
 .login-button {
-  margin-top: 300px;
-  font-family: 'Inter', sans-serif;
-  font-style: normal;
-  font-weight: 600;
-  font-size: 34px;
-  line-height: 41px;
-  color: #461818;
-  text-decoration: none;
-  text-align: center;
-  background: transparent;
-  border: none;
-  cursor: pointer;
+    margin-top: 300px;
+    font-family: 'Montserrat', sans-serif;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 38px;
+    line-height: 45px;
+    color: white;
+    text-decoration: none;
+    text-align: center;
+    background: linear-gradient(to right, #F35B04, #F18701, #F7B801);
+    border: none;
+    cursor: pointer;
+    border-radius: 50px;
+    padding: 15px 30px;
 }
 </style>

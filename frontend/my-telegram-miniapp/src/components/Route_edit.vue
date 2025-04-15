@@ -1,50 +1,50 @@
 <template>
   <div class="route-edit">
-    <div class="route-edit-header">
-      <button class="back-button" @click="$emit('close')">← Назад</button>
-      <h2>Создать маршрут</h2>
-    </div>
 
-    <form @submit.prevent="saveRoute">
-      <label>
-        Название маршрута:
-        <input v-model="route.name" type="text" required maxlength="255" />
-      </label>
+    <div class="page-container">
+      <form @submit.prevent="saveRoute" class="scrollable-form">
+        <label>
+          Название маршрута:
+          <input v-model="route.name" type="text" required maxlength="255" />
+        </label>
 
-      <label>
-        Описание:
-        <textarea v-model="route.description" required></textarea>
-      </label>
+        <label>
+          Описание:
+          <textarea v-model="route.description" required></textarea>
+        </label>
 
-      <label>
-        Тип прогулки:
-        <div>
-          <select v-model="selectedType" multiple>
-            <option value="пешая">Пешая</option>
-            <option value="велосипедная">Велосипедная</option>
-            <option value="авто">Авто</option>
-          </select>
+        <label>
+          Тип прогулки:
+          <div class="type-container">
+            <div
+                v-for="(type, index) in route.type"
+                :key="index"
+                class="type-tag"
+            >
+              {{ type }}
+              <span class="remove-type" @click="removeType(index)">×</span>
+            </div>
 
-          <div class="add-type">
-            <input v-model="newType" type="text" placeholder="Добавить новый тип" />
-            <button type="button" @click="addCustomType" :disabled="!newType || route.type.includes(newType)">
-              Добавить тип
-            </button>
+            <div v-if="showNewTypeInput" class="new-type-input">
+              <input v-model="newType" type="text" @keyup.enter="addCustomType" />
+              <button type="button" @click="addCustomType" :disabled="!newType">✓</button>
+            </div>
+
+            <button type="button" class="add-type-button" @click="showNewTypeInput = true" v-if="!showNewTypeInput">＋</button>
           </div>
-        </div>
-      </label>
+        </label>
 
-      <label>
-        Превью (URL):
-        <input v-model="route.image_url" type="url" required />
-      </label>
+        <label>
+          Превью (URL):
+          <input v-model="route.image_url" type="url" required />
+        </label>
 
-      <div id="map" class="map"></div>
-      <button type="button" @click="addingPoint = true">Добавить точку</button>
-
-      <button type="submit">Сохранить</button>
-      <button type="button" @click="$emit('close')">Отмена</button>
-    </form>
+        <div id="map" class="map"></div>
+        <button type="button" @click="addingPoint = true">Добавить точку</button>
+        <button type="submit">Сохранить</button>
+        <button type="button" @click="$emit('close')">Отмена</button>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -67,8 +67,8 @@ export default {
       likes: 0,
       map: null,
       addingPoint: false,
-      selectedType: [],
       newType: '',
+      showNewTypeInput: false,
     };
   },
   mounted() {
@@ -101,10 +101,16 @@ export default {
     },
 
     addCustomType() {
-      if (this.newType && !this.route.type.includes(this.newType)) {
-        this.route.type.push(this.newType);
+      const trimmed = this.newType.trim();
+      if (trimmed && !this.route.type.includes(trimmed)) {
+        this.route.type.push(trimmed);
         this.newType = '';
+        this.showNewTypeInput = false;
       }
+    },
+
+    removeType(index) {
+      this.route.type.splice(index, 1);
     },
 
     async saveRoute() {
@@ -121,10 +127,12 @@ export default {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap');
 
 body {
-  font-family: 'Work Sans', sans-serif;
+  font-family: 'Montserrat', sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
 .route-edit {
@@ -134,41 +142,21 @@ body {
   width: 100%;
   height: 100%;
   background: white;
-  padding: 20px;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  padding-top:55px;
+  font-family: 'Montserrat', sans-serif;
+  overflow: hidden;
+}
+
+.scrollable-form {
   overflow-y: auto;
-}
-
-.route-edit-header {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-.back-button {
-  background: none;
-  border: none;
-  color: #007bff;
-  font-size: 1rem;
-  cursor: pointer;
-  padding: 0;
-  margin: 0;
-}
-
-.back-button:hover {
-  text-decoration: underline;
-}
-
-h2 {
-  margin: 0;
+  max-height: calc(100vh - 70px);
+  padding: 20px;
 }
 
 form {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  justify-content: start;
+  font-weight: 300;
 }
 
 input,
@@ -176,45 +164,88 @@ textarea,
 select {
   margin-top: 5px;
   margin-bottom: 15px;
-  padding: 8px;
-  width: 100%;
+  padding: 10px 15px;
+  width: 85%;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 50px;
+  background-color: #f2f2f2;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 300;
+  outline: none;
 }
 
 button {
   margin-top: 10px;
   padding: 10px;
-  background: #007bff;
+  background: linear-gradient(to right, #7678ED, #3D348B);
   color: white;
   border: none;
   cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 300;
+  border-radius: 50px;
 }
 
-button:hover {
-  background: #0056b3;
-}
 
 button:last-child {
-  background: #d9534f;
-}
-
-button:last-child:hover {
-  background: #c9302c;
+  background: linear-gradient(to right, #F35B04, #F18701, #F7B801);
 }
 
 .map {
-  height: 300px;
+  height: 250px;
   width: 100%;
   margin: 20px 0;
-  border-radius: 10px;
+  border-radius: 50px;
 }
 
-.add-type {
+.type-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-top: 10px;
 }
 
-.add-type input {
-  margin-right: 10px;
+.type-tag {
+  display: flex;
+  align-items: center;
+  background-color: #e0e0e0;
+  border-radius: 20px;
+  padding: 5px 10px;
+  font-size: 0.9rem;
+}
+
+.remove-type {
+  margin-left: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.add-type-button {
+  background-color: #7678ED;
+  color: white;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 1.2rem;
+  border: none;
+  cursor: pointer;
+  height: 36px;
+  width: 36px;
+}
+
+.new-type-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.new-type-input input {
+  width: 150px;
+  border-radius: 20px;
+  padding: 5px 10px;
+}
+
+.new-type-input button {
+  border-radius: 20px;
+  padding: 5px 10px;
 }
 </style>
