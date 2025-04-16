@@ -1,6 +1,8 @@
 <template>
   <div class="route-inf">
-    <button @click="$router.back()" class="back-button"><img src="../assets/arrow.svg"></button>
+    <button @click="$router.back()" class="back-button">
+      <img src="../assets/arrow.svg" class="arrow-icon" />
+    </button>
 
     <div class="route-details">
       <h2 class="route-title">{{ routeData.name }}</h2>
@@ -30,11 +32,21 @@
     <!-- Точки -->
     <div v-if="activeTab === 'points'" class="tab-content points-tab">
       <h3>Точки маршрута</h3>
-      <ul v-if="routeData.points && routeData.points.length > 0">
-        <li v-for="(point, index) in routeData.points" :key="index">
-          Точка {{ index + 1 }}: [{{ Number(point.latitude).toFixed(5) }}, {{ Number(point.longitude).toFixed(5) }}]
+      <ul v-if="routeData.points && routeData.points.length > 0" style="list-style: none; padding-left: 0;">
+        <li
+            v-for="(point, index) in routeData.points"
+            :key="index"
+            :class="'point-bg-' + (index % 5)"
+            class="point-item"
+        >
+          <span class="point-index">{{ index + 1 }}</span>
+          <span class="point-coords">
+            {{ Number(point.latitude).toFixed(5) }}, {{ Number(point.longitude).toFixed(5) }}
+          </span>
         </li>
       </ul>
+
+
       <p v-else>Нет точек в этом маршруте.</p>
     </div>
 
@@ -91,7 +103,7 @@ export default {
   },
   async mounted() {
     await this.loadRouteData();
-    await this.loadComments(); // 👈 Добавлено
+    await this.loadComments();
     this.initMap();
     this.addRoutePoints();
   },
@@ -190,16 +202,21 @@ body {
 }
 
 .back-button {
-  background: none;
+  background: linear-gradient(135deg, #F35B04, #F7B801); /* Градиентный фон */
   border: none;
-  font-size: 1.2rem;
+  border-radius: 50%;
+  padding: 12px;
   cursor: pointer;
-  font-weight: 500;
-  transition: color 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease-in-out;
 }
 
-.back-button:hover {
-  color: #7678ED;
+.arrow-icon {
+  width: 24px;
+  height: 24px;
+  fill: white;
 }
 
 .route-details {
@@ -317,7 +334,50 @@ body {
 
 .points-tab ul {
   padding-left: 20px;
+  list-style: none;
 }
+
+.point-item {
+  padding: 6px 10px;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+}
+
+
+.point-bg-0 { background-color: rgba(243, 91, 4, 0.2); }   /* #F35B04 */
+.point-bg-1 { background-color: rgba(241, 135, 1, 0.2); }  /* #F18701 */
+.point-bg-2 { background-color: rgba(247, 184, 1, 0.2); }  /* #F7B801 */
+.point-bg-3 { background-color: rgba(118, 120, 237, 0.2); }/* #7678ED */
+.point-bg-4 { background-color: rgba(61, 52, 139, 0.2); }  /* #3D348B */
+
+.point-bg-0 .point-index { background-color: #F35B04; } /* #F35B04 */
+.point-bg-1 .point-index { background-color: #F18701; } /* #F18701 */
+.point-bg-2 .point-index { background-color: #F7B801; } /* #F7B801 */
+.point-bg-3 .point-index { background-color: #7678ED; } /* #7678ED */
+.point-bg-4 .point-index { background-color: #3D348B; } /* #3D348B */
+
+
+.point-index {
+  display: inline-block;
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.point-coords {
+  color: #666;
+  font-family: monospace;
+  font-size: 14px;
+}
+
 
 .comment-form {
   display: flex;
