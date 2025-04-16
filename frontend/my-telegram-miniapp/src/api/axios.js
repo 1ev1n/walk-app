@@ -4,7 +4,7 @@ import axios from 'axios';
 const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
 const api = axios.create({
-    baseURL: 'http://localhost:3000/api',  // Должно быть правильно настроено
+    baseURL: 'http://localhost:3000/api',
     headers: {
         'Content-Type': 'application/json',
     },
@@ -12,7 +12,6 @@ const api = axios.create({
 });
 
 
-// Проверка наличия Telegram WebApp
 const checkTelegramWebApp = () => {
     if (window.Telegram && window.Telegram.WebApp) {
         console.log('Telegram WebApp доступен');
@@ -23,17 +22,16 @@ const checkTelegramWebApp = () => {
     }
 };
 
-// Если WebApp доступен, добавляем данные в запросы
 api.interceptors.request.use(
     (config) => {
         if (checkTelegramWebApp()) {
             const tg = window.Telegram.WebApp;
-            const initData = tg.initData; // Данные инициализации WebApp
+            const initData = tg.initData;
 
             if (initData) {
                 config.params = {
                     ...config.params,
-                    user: initData, // Добавляем initData как параметр user
+                    user: initData,
                 };
             }
         } else {
@@ -47,7 +45,6 @@ api.interceptors.request.use(
     }
 );
 
-// Подписка на событие готовности WebApp
 const waitForWebAppInitialization = () => {
     if (window.Telegram && window.Telegram.WebApp) {
         const tg = window.Telegram.WebApp;
@@ -55,11 +52,10 @@ const waitForWebAppInitialization = () => {
         console.log('WebApp инициализирован и готов к использованию');
     } else {
         console.log('Ожидаем инициализацию WebApp...');
-        setTimeout(waitForWebAppInitialization, 500); // Повторная проверка через 500ms
+        setTimeout(waitForWebAppInitialization, 500);
     }
 };
 
-// Запуск ожидания инициализации
 waitForWebAppInitialization();
 
 export default api;

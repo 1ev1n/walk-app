@@ -1,6 +1,5 @@
 <template>
   <div class="route-edit">
-
     <div class="page-container">
       <form @submit.prevent="saveRoute" class="scrollable-form">
         <label>
@@ -64,7 +63,6 @@ export default {
         image_url: '',
         coordinates: [],
       },
-      likes: 0,
       map: null,
       addingPoint: false,
       newType: '',
@@ -115,20 +113,36 @@ export default {
 
     async saveRoute() {
       try {
+        const points = this.route.coordinates.map(coord => ({
+          latitude: coord.lat,
+          longitude: coord.lng,
+        }));
+
+        const payload = {
+          name: this.route.name,
+          description: this.route.description,
+          type: this.route.type.length === 1 ? this.route.type[0] : JSON.stringify(this.route.type),
+          imageUrl: this.route.image_url,
+          points,
+        };
+
+        console.log("📦 Sending route:", payload);
+
         const response = await axios.post(
             'http://localhost:3000/api/routes',
-            this.route,
+            payload,
             {
               headers: {
                 'Content-Type': 'application/json',
-                'x-dev-user': 'true' // 👈 this enables dev bypass
+                'x-dev-user': 'true'
               }
             }
         );
-        console.log('Маршрут сохранен:', response.data);
+
+        console.log('✅ Маршрут сохранен:', response.data);
         this.$emit('close');
       } catch (err) {
-        console.error('Ошибка при сохранении маршрута:', err);
+        console.error('❌ Ошибка при сохранении маршрута:', err);
       }
     },
   },

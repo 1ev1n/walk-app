@@ -1,12 +1,11 @@
 <template>
   <div class="route-inf">
-
-    <button @click="$router.back()" class="back-button">← Назад</button>
+    <button @click="$router.back()" class="back-button"><img src="../assets/arrow.svg"></button>
 
     <div class="route-details">
       <h2 class="route-title">{{ routeData.name }}</h2>
       <p class="route-description">{{ routeData.description }}</p>
-      <p class="route-type">Тип прогулки: <span>{{ routeData.type }}</span></p>
+      <p class="route-type">Тип прогулки: <span>{{ parsedType }}</span></p>
       <p class="route-author">Автор маршрута: <span>{{ routeData.user_id }}</span></p>
 
       <!-- Лайк -->
@@ -24,35 +23,25 @@
     <!-- Вкладки -->
     <div class="tabs">
       <div class="selector" :style="{ left: selectorLeft }"></div>
-      <a
-          class="tab"
-          :class="{ active: activeTab === 'points' }"
-          @click="switchTab('points')"
-      >
-        Точки
-      </a>
-      <a
-          class="tab"
-          :class="{ active: activeTab === 'comments' }"
-          @click="switchTab('comments')"
-      >
-        Комментарии
-      </a>
+      <a class="tab" :class="{ active: activeTab === 'points' }" @click="switchTab('points')">Точки</a>
+      <a class="tab" :class="{ active: activeTab === 'comments' }" @click="switchTab('comments')">Комментарии</a>
     </div>
 
+    <!-- Точки -->
     <div v-if="activeTab === 'points'" class="tab-content points-tab">
       <h3>Точки маршрута</h3>
-      <ul v-if="routeData.coordinates && routeData.coordinates.length > 0">
-        <li v-for="(coord, index) in routeData.coordinates" :key="index">
-          Точка {{ index + 1 }}: [{{ coord.lat.toFixed(5) }}, {{ coord.lng.toFixed(5) }}]
+      <ul v-if="routeData.points && routeData.points.length > 0">
+        <li v-for="(point, index) in routeData.points" :key="index">
+          Точка {{ index + 1 }}: [{{ Number(point.latitude).toFixed(5) }}, {{ Number(point.longitude).toFixed(5) }}]
         </li>
       </ul>
       <p v-else>Нет точек в этом маршруте.</p>
     </div>
 
+    <!-- Комментарии -->
     <div v-if="activeTab === 'comments'" class="tab-content comments-section">
       <div class="comment-form">
-        <textarea v-model="newComment" placeholder="Оставьте комментарий..." rows="4"></textarea>
+        <textarea v-model="newComment" placeholder="Оставьте комментарий..." rows="1"></textarea>
         <button @click="submitComment" class="submit-comment">Отправить</button>
       </div>
 
@@ -63,7 +52,6 @@
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -78,23 +66,32 @@ export default {
   data() {
     return {
       routeData: {
-        coordinates: [],
         comments: [],
         likes: 0,
+        points: [],
       },
       map: null,
       liked: false,
       newComment: '',
-      activeTab: 'points'
+      activeTab: 'points',
     };
   },
   computed: {
     selectorLeft() {
       return this.activeTab === 'points' ? '0%' : '50%';
-    }
+    },
+    parsedType() {
+      try {
+        const parsed = JSON.parse(this.routeData.type);
+        return Array.isArray(parsed) ? parsed.join(', ') : parsed;
+      } catch {
+        return this.routeData.type;
+      }
+    },
   },
   async mounted() {
     await this.loadRouteData();
+    await this.loadComments(); // 👈 Добавлено
     this.initMap();
     this.addRoutePoints();
   },
@@ -107,16 +104,24 @@ export default {
         console.error('Ошибка загрузки маршрута:', err);
       }
     },
+    async loadComments() {
+      try {
+        const res = await axios.get(`http://localhost:3000/api/comments/${this.id}`);
+        this.routeData.comments = res.data;
+      } catch (err) {
+        console.error('Ошибка загрузки комментариев:', err);
+      }
+    },
     initMap() {
       this.map = L.map('map').setView([51.505, -0.09], 13);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
+        attribution: '&copy; OpenStreetMap contributors',
       }).addTo(this.map);
     },
     addRoutePoints() {
-      if (!this.routeData.coordinates || this.routeData.coordinates.length === 0) return;
+      if (!this.routeData.points || this.routeData.points.length === 0) return;
 
-      const latlngs = this.routeData.coordinates.map(coord => [coord.lat, coord.lng]);
+      const latlngs = this.routeData.points.map(p => [p.latitude, p.longitude]);
       latlngs.forEach(([lat, lng]) => {
         L.marker([lat, lng]).addTo(this.map);
       });
@@ -138,12 +143,23 @@ export default {
     async submitComment() {
       if (this.newComment.trim()) {
         try {
+          const token = localStorage.getItem('token');
           const newCommentData = {
             text: this.newComment,
-            author: 'Аноним'
+            author: 'Аноним',
           };
-          await axios.post(`http://localhost:3000/api/routes/${this.id}/comments`, newCommentData);
-          this.routeData.comments.push(newCommentData);
+          await axios.post(
+              `http://localhost:3000/api/comments/${this.id}`,
+              newCommentData,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+          );
+          // После успешного добавления — обновить список комментариев:
+          const commentsResponse = await axios.get(`http://localhost:3000/api/comments/${this.id}`);
+          this.routeData.comments = commentsResponse.data;
           this.newComment = '';
         } catch (err) {
           console.error('Ошибка при отправке комментария:', err);
@@ -152,10 +168,11 @@ export default {
     },
     switchTab(tab) {
       this.activeTab = tab;
-    }
-  }
+    },
+  },
 };
 </script>
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&display=swap');
@@ -175,10 +192,8 @@ body {
 .back-button {
   background: none;
   border: none;
-  color: #3D348B;
   font-size: 1.2rem;
   cursor: pointer;
-  margin-bottom: 20px;
   font-weight: 500;
   transition: color 0.3s ease;
 }
@@ -188,7 +203,7 @@ body {
 }
 
 .route-details {
-  padding: 20px;
+  padding: 10px 20px;
   border-radius: 30px;
   margin-bottom: 20px;
 }
