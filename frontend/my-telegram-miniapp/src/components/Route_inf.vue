@@ -1,6 +1,6 @@
 <template>
   <div class="route-inf">
-    <!-- Кнопка Назад -->
+
     <button @click="$router.back()" class="back-button">← Назад</button>
 
     <div class="route-details">
@@ -12,37 +12,58 @@
       <!-- Лайк -->
       <div class="like-section">
         <button @click="toggleLike" class="like-button">
-          {{ liked ? '💖 Лайкнут' : '🤍 Лайкнуть' }}
+          {{ liked ? '💖' : '🤍' }}
         </button>
-        <span>{{ routeData.likes }} Лайков</span>
+        <span>{{ routeData.likes }}</span>
       </div>
     </div>
 
     <!-- Карта маршрута -->
     <div id="map" class="map"></div>
 
-    <!-- Комментарии -->
-    <div class="comments-section">
-      <button @click="toggleComments" class="comments-toggle">
-        {{ showComments ? 'Скрыть комментарии' : 'Посмотреть комментарии' }}
-      </button>
+    <!-- Вкладки -->
+    <div class="tabs">
+      <div class="selector" :style="{ left: selectorLeft }"></div>
+      <a
+          class="tab"
+          :class="{ active: activeTab === 'points' }"
+          @click="switchTab('points')"
+      >
+        Точки
+      </a>
+      <a
+          class="tab"
+          :class="{ active: activeTab === 'comments' }"
+          @click="switchTab('comments')"
+      >
+        Комментарии
+      </a>
+    </div>
 
-      <div v-if="showComments" class="comments-list">
+    <div v-if="activeTab === 'points'" class="tab-content points-tab">
+      <h3>Точки маршрута</h3>
+      <ul v-if="routeData.coordinates && routeData.coordinates.length > 0">
+        <li v-for="(coord, index) in routeData.coordinates" :key="index">
+          Точка {{ index + 1 }}: [{{ coord.lat.toFixed(5) }}, {{ coord.lng.toFixed(5) }}]
+        </li>
+      </ul>
+      <p v-else>Нет точек в этом маршруте.</p>
+    </div>
+
+    <div v-if="activeTab === 'comments'" class="tab-content comments-section">
+      <div class="comment-form">
+        <textarea v-model="newComment" placeholder="Оставьте комментарий..." rows="4"></textarea>
+        <button @click="submitComment" class="submit-comment">Отправить</button>
+      </div>
+
+      <div class="comments-list">
         <div v-for="comment in routeData.comments" :key="comment.id" class="comment">
           <p class="comment-author">{{ comment.author }}:</p>
           <p class="comment-text">{{ comment.text }}</p>
         </div>
       </div>
-
-      <div class="comment-form" v-if="showCommentForm">
-        <textarea v-model="newComment" placeholder="Оставьте комментарий..." rows="4"></textarea>
-        <button @click="submitComment" class="submit-comment">Отправить</button>
-      </div>
-
-      <button @click="showCommentForm = !showCommentForm" class="toggle-comment-form">
-        {{ showCommentForm ? 'Отменить' : 'Добавить комментарий' }}
-      </button>
     </div>
+
   </div>
 </template>
 
@@ -56,13 +77,21 @@ export default {
   props: ['id'],
   data() {
     return {
-      routeData: {},
+      routeData: {
+        coordinates: [],
+        comments: [],
+        likes: 0,
+      },
       map: null,
-      liked: false, // Для отслеживания состояния лайка
+      liked: false,
       newComment: '',
-      showComments: false,
-      showCommentForm: false
+      activeTab: 'points'
     };
+  },
+  computed: {
+    selectorLeft() {
+      return this.activeTab === 'points' ? '0%' : '50%';
+    }
   },
   async mounted() {
     await this.loadRouteData();
@@ -79,7 +108,7 @@ export default {
       }
     },
     initMap() {
-      this.map = L.map('map').setView([51.505, -0.09], 13); // Инициализация карты с дефолтным центром
+      this.map = L.map('map').setView([51.505, -0.09], 13);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(this.map);
@@ -106,23 +135,23 @@ export default {
         console.error('Ошибка при обновлении лайка:', err);
       }
     },
-    toggleComments() {
-      this.showComments = !this.showComments;
-    },
     async submitComment() {
       if (this.newComment.trim()) {
         try {
           const newCommentData = {
             text: this.newComment,
-            author: 'Аноним' // Можете заменить на реального пользователя
+            author: 'Аноним'
           };
           await axios.post(`http://localhost:3000/api/routes/${this.id}/comments`, newCommentData);
-          this.routeData.comments.push(newCommentData); // Добавить комментарий локально
-          this.newComment = ''; // Очистить поле
+          this.routeData.comments.push(newCommentData);
+          this.newComment = '';
         } catch (err) {
           console.error('Ошибка при отправке комментария:', err);
         }
       }
+    },
+    switchTab(tab) {
+      this.activeTab = tab;
     }
   }
 };
@@ -159,10 +188,8 @@ body {
 }
 
 .route-details {
-  background-color: #f9f9f9;
   padding: 20px;
   border-radius: 30px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   margin-bottom: 20px;
 }
 
@@ -220,15 +247,78 @@ body {
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-.comments-section {
-  background-color: #f2f2f2;
-  padding: 20px;
-  border-radius: 30px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+.tabs {
+  position: relative;
+  display: flex;
+  justify-content: space-around;
+  background: #fff;
+  border-radius: 50px;
+  padding: 5px;
+  width: 90%;
+  max-width: 500px;
+  margin: 10px auto 5px;
+  z-index: 2;
 }
 
-.comments-toggle,
-.toggle-comment-form,
+.tab {
+  text-decoration: none;
+  color: #777;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  flex: 1;
+  text-align: center;
+  z-index: 2;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  font-size: 14px;
+  font-weight: 500;
+  position: relative;
+}
+
+.tab.active {
+  color: #fff;
+  font-weight: bold;
+}
+
+.selector {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  border-radius: 50px;
+  z-index: 1;
+  background: linear-gradient(45deg, #F35B04 0%, #7678ED 100%);
+  transition: left 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.tab-content {
+  padding: 20px;
+  border-radius: 30px;
+  background-color: #f9f9f9;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+.points-tab ul {
+  padding-left: 20px;
+}
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+
+.comment-form textarea {
+  resize: none;
+  padding: 10px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+  font-family: 'Montserrat', sans-serif;
+}
+
 .submit-comment {
   background: linear-gradient(to right, #7678ED, #3D348B);
   color: white;
@@ -236,49 +326,19 @@ body {
   padding: 10px 18px;
   border-radius: 50px;
   cursor: pointer;
-  margin-bottom: 10px;
-  font-size: 0.95rem;
-  transition: background 0.3s ease;
+  align-self: flex-start;
 }
 
-.comments-toggle:hover,
-.toggle-comment-form:hover,
-.submit-comment:hover {
-  background: linear-gradient(to right, #3D348B, #7678ED);
-}
-
-.comments-list {
+.comments-list .comment {
   margin-bottom: 15px;
 }
 
-.comment {
-  background-color: #ffffff;
-  padding: 15px;
-  border-radius: 20px;
-  margin-bottom: 10px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
 .comment-author {
-  font-weight: 500;
+  font-weight: bold;
   margin-bottom: 5px;
 }
 
 .comment-text {
-  font-size: 0.95rem;
-}
-
-.comment-form textarea {
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #ccc;
-  border-radius: 20px;
-  background-color: #ffffff;
-  resize: vertical;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.95rem;
-  margin-bottom: 10px;
-  outline: none;
+  margin-left: 10px;
 }
 </style>
-

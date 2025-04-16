@@ -115,7 +115,16 @@ export default {
 
     async saveRoute() {
       try {
-        const response = await axios.post('http://localhost:3000/api/routes', this.route);
+        const response = await axios.post(
+            'http://localhost:3000/api/routes',
+            this.route,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'x-dev-user': 'true' // 👈 this enables dev bypass
+              }
+            }
+        );
         console.log('Маршрут сохранен:', response.data);
         this.$emit('close');
       } catch (err) {
