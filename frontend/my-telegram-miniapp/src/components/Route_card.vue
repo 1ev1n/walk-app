@@ -73,7 +73,7 @@ export default {
 .route-card-image {
   flex: 1;
   max-width: 150px;
-  margin-left: 20px;
+  margin-right: 20px;
 }
 .route-image {
   width: 100%;

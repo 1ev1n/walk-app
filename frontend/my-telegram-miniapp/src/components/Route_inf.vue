@@ -7,7 +7,12 @@
     <div class="route-details">
       <h2 class="route-title">{{ routeData.name }}</h2>
       <p class="route-description">{{ routeData.description }}</p>
-      <p class="route-type">Тип прогулки: <span>{{ parsedType }}</span></p>
+      <p class="route-type">
+        Тип прогулки:
+        <span v-for="(item, index) in parsedType" :key="index" class="type-tag">
+          {{ item }}<span v-if="index !== parsedType.length - 1">, </span>
+        </span>
+      </p>
       <p class="route-author">Автор маршрута: <span>{{ routeData.user_id }}</span></p>
 
       <!-- Лайк -->
@@ -59,7 +64,7 @@
 
       <div class="comments-list">
         <div v-for="comment in routeData.comments" :key="comment.id" class="comment">
-          <p class="comment-author">{{ comment.author }}:</p>
+          <p class="comment-author">{{ comment.username }}:</p>
           <p class="comment-text">{{ comment.text }}</p>
         </div>
       </div>
@@ -82,8 +87,8 @@ export default {
         likes: 0,
         points: [],
       },
-      map: null,
       liked: false,
+      map: null,
       newComment: '',
       activeTab: 'points',
     };
@@ -95,15 +100,22 @@ export default {
     parsedType() {
       try {
         const parsed = JSON.parse(this.routeData.type);
-        return Array.isArray(parsed) ? parsed.join(', ') : parsed;
+        return Array.isArray(parsed) ? parsed : [];
       } catch {
-        return this.routeData.type;
+        if (Array.isArray(this.routeData.type)) {
+          return this.routeData.type;
+        } else if (typeof this.routeData.type === 'string') {
+          return this.routeData.type.split(',').map(item => item.trim());
+        }
+        return [];
       }
     },
   },
   async mounted() {
     await this.loadRouteData();
     await this.loadComments();
+    await this.checkIfLiked();
+    await this.loadLikeCount();
     this.initMap();
     this.addRoutePoints();
   },
@@ -124,6 +136,79 @@ export default {
         console.error('Ошибка загрузки комментариев:', err);
       }
     },
+    async checkIfLiked() {
+      try {
+        const res = await axios.get(`http://localhost:3000/api/likes/${this.id}/hasliked`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'x-dev-user': 'true',
+          },
+        });
+        this.liked = res.data.liked;
+      } catch (err) {
+        console.error('Ошибка при проверке лайка:', err);
+      }
+    },
+    async loadLikeCount() {
+      try {
+        const res = await axios.get(`http://localhost:3000/api/likes/${this.id}/count`);
+        this.routeData.likes = res.data.count;
+      } catch (err) {
+        console.error('Ошибка при загрузке количества лайков:', err);
+      }
+    },
+    async toggleLike() {
+      try {
+        if (this.liked) {
+          await axios.delete(`http://localhost:3000/api/likes/${this.id}`, {
+            headers: {
+              'Content-Type': 'application/json',
+              'x-dev-user': 'true',
+            },
+          });
+          this.liked = false;
+          this.routeData.likes -= 1;
+        } else {
+          await axios.post(`http://localhost:3000/api/likes/${this.id}`, {}, {
+            headers: {
+              'Content-Type': 'application/json',
+              'x-dev-user': 'true',
+            },
+          });
+          this.liked = true;
+          this.routeData.likes += 1;
+        }
+      } catch (err) {
+        const message = err.response?.data?.message || err.message;
+        console.error('Ошибка при отправке лайка:', message);
+      }
+    },
+    async submitComment() {
+      if (this.newComment.trim()) {
+        try {
+          const token = localStorage.getItem('token');
+          const newCommentData = {
+            text: this.newComment,
+            author: 'Аноним',
+          };
+          await axios.post(
+              `http://localhost:3000/api/comments/${this.id}`,
+              newCommentData,
+              {
+                headers: {
+                  'Content-Type': 'application/json',
+                  'x-dev-user': 'true',
+                },
+              }
+          );
+          const commentsResponse = await axios.get(`http://localhost:3000/api/comments/${this.id}`);
+          this.routeData.comments = commentsResponse.data;
+          this.newComment = '';
+        } catch (err) {
+          console.error('Ошибка при отправке комментария:', err);
+        }
+      }
+    },
     initMap() {
       this.map = L.map('map').setView([51.505, -0.09], 13);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -140,50 +225,13 @@ export default {
       L.polyline(latlngs, { color: 'red' }).addTo(this.map);
       this.map.fitBounds(latlngs);
     },
-    toggleLike() {
-      this.liked = !this.liked;
-      this.routeData.likes += this.liked ? 1 : -1;
-      this.updateLikeStatus();
-    },
-    async updateLikeStatus() {
-      try {
-        await axios.post(`http://localhost:3000/api/routes/${this.id}/like`, { liked: this.liked });
-      } catch (err) {
-        console.error('Ошибка при обновлении лайка:', err);
-      }
-    },
-    async submitComment() {
-      if (this.newComment.trim()) {
-        try {
-          const token = localStorage.getItem('token');
-          const newCommentData = {
-            text: this.newComment,
-            author: 'Аноним',
-          };
-          await axios.post(
-              `http://localhost:3000/api/comments/${this.id}`,
-              newCommentData,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-          );
-          // После успешного добавления — обновить список комментариев:
-          const commentsResponse = await axios.get(`http://localhost:3000/api/comments/${this.id}`);
-          this.routeData.comments = commentsResponse.data;
-          this.newComment = '';
-        } catch (err) {
-          console.error('Ошибка при отправке комментария:', err);
-        }
-      }
-    },
     switchTab(tab) {
       this.activeTab = tab;
     },
   },
 };
 </script>
+
 
 
 <style scoped>
