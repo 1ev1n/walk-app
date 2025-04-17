@@ -29,6 +29,13 @@
     <div class="card-container" v-if="activeTab === 'feed'">
       <RouteFeed :tab="activeTab" :userData="userData" />
     </div>
+    <div class="card-container" v-if="activeTab === 'my'">
+      <RouteFeed :tab="activeTab" :userData="userData" />
+    </div>
+    <div class="card-container" v-if="activeTab === 'favourites'">
+      <RouteFeed :tab="activeTab" :userData="userData" />
+    </div>
+
 
     <div v-if="activeTab === 'my'" class="button-container">
       <button class="add-route" @click="goToMapRouteEdit">+</button>
